@@ -17,9 +17,18 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableMethodSecurity
 public class SecurityConfig {
   @Bean
-  SecurityFilterChain defaultSecurityFilterChain (HttpSecurity http) throws Exception {
-    http.authorizeHttpRequests(
-        (requests) -> requests.anyRequest().authenticated());
+  SecurityFilterChain defaultSecurityFilterChain (
+      HttpSecurity http) throws Exception {
+    http.authorizeHttpRequests((requests) -> requests.requestMatchers(
+                                                         "/h2-console/**")
+                                                     .permitAll()
+                                                     .anyRequest()
+                                                     .authenticated());
+    http.csrf(
+        httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable());
+    http.headers(headers -> headers.frameOptions(
+        frameOptionsConfig -> frameOptionsConfig.sameOrigin()));
+
     http.sessionManagement((session -> session.sessionCreationPolicy(
         SessionCreationPolicy.STATELESS)));
     //http.formLogin(withDefaults());
@@ -34,7 +43,7 @@ public class SecurityConfig {
                             .roles("USER")
                             .build();
 
-    UserDetails admin = User.withUsername("admin")
+    UserDetails admin = User.withUsername("admin1")
                             .password("{noop}admin")
                             .roles("ADMIN")
                             .build();
